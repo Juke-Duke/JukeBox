@@ -30,12 +30,11 @@ public partial class MusicSlashCommands
 
         var vibe = jukeBox.CurrentTrack!;
 
-        embed = new EmbedBuilder()
-                   .WithAuthor("Current Vibe")
-                   .WithTitle(vibe.Title)
-                   .AddField("Channel", vibe.Author, true)
-                   .AddField("Timestamp", $"{jukeBox.Position.Position.ToString(@"hh\:mm\:ss")} / {vibe.Duration.ToString(@"hh\:mm\:ss")}", true)
-                   .AddField("Next Vibe", jukeBox.Queue.FirstOrDefault()?.Title ?? "-", true);
+        embed.WithAuthor("Current Vibe")
+             .WithTitle(vibe.Title)
+             .AddField("Channel", vibe.Author, true)
+             .AddField("Timestamp", $"{jukeBox.Position.Position.ToString(@"hh\:mm\:ss")} / {vibe.Duration.ToString(@"hh\:mm\:ss")}", true)
+             .AddField("Next Vibe", jukeBox.Queue.FirstOrDefault()?.Title ?? "-", true);
 
         await RespondAsync(vibe.Source, embed: embed.Build());
     }

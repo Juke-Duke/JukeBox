@@ -51,7 +51,7 @@ public partial class MusicSlashCommands
             await RespondAsync(embed: embed.Build());
             return;
         }
-        else if (position < 0 || position >= jukeBox.Queue.Count)
+        else if (position < 0 || position > jukeBox.Queue.Count)
         {
             embed.WithAuthor("❌ Vibe Error")
                  .WithTitle("Vibe position is off the grid");
@@ -61,11 +61,12 @@ public partial class MusicSlashCommands
         }
 
         var queue = jukeBox.Queue;
+        var vibe = queue[position - 1];
 
-        queue.RemoveAt(position);
+        queue.RemoveAt(position - 1);
 
         embed.WithAuthor($"✅ Vibe Removed by {Context.User.Username}")
-             .WithTitle(queue[position].Title)
+             .WithTitle(vibe.Title)
              .WithThumbnailUrl(Context.User.GetAvatarUrl());
 
         await RespondAsync(embed: embed.Build());
