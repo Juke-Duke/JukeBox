@@ -8,57 +8,65 @@ namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
 {
     [SlashCommand("play", "Set JukeBox's current vibe.")]
-    public async Task PlayCommandAsync(string track)
+    public async Task PlayCommandAsync(string vibe)
     {
+        var embed = new EmbedBuilder().WithColor(102, 196, 166);
         var userVoiceState = (Context.User as IVoiceState)!;
 
         if (userVoiceState.VoiceChannel is null)
         {
-            await RespondAsync("❌ You must be in a voice channel to set JukeBox's vibe.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("You must be in a voice channel to set JukeBox's vibe.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
         if (!_audioService.HasPlayer(Context.Guild.Id))
         {
-            await RespondAsync("❌ JukeBox is not in a vibe session.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("JukeBox is not in a vibe session.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
         if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
         {
-            await RespondAsync("❌ You must be in the same voice channel to set JukeBox's vibe.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("You must be in the same voice channel to set the vibe.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
         var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
+        var setVibe = await _audioService.GetTrackAsync(vibe, SearchMode.YouTube);
 
-        var vibe = await _audioService.GetTrackAsync(track, SearchMode.YouTube);
-
-        if (vibe is null)
+        if (setVibe is null)
         {
-            await RespondAsync("❌ No vibe could be found for JukeBox.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("No vibe could be found for JukeBox.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
-        var pos = await jukeBox.PlayAsync(vibe);
+        var pos = await jukeBox.PlayAsync(setVibe);
         // using var artworkService = new ArtworkService();
         // var artworkUri = (await artworkService.ResolveAsync(song))!;
 
-        var embedBuilder = new EmbedBuilder();
         if (pos > 0)
-            embedBuilder.WithAuthor($"Vibe Queued");
+            embed.WithAuthor($"✅ Vibe Queued by {Context.User.Username}");
         else
-            embedBuilder.WithAuthor($"Vibe Now Playing");
+            embed.WithAuthor($"✅ Vibe Set by {Context.User.Username}");
 
-        var embed = embedBuilder
-                    .WithTitle(vibe.Title)
-                    .WithThumbnailUrl(Context.User.GetAvatarUrl())
-                    .AddField("Channel", vibe.Author, true)
-                    .AddField("Duration", vibe.Duration, true)
-                    .AddField("Position", pos, true)
-                    .WithColor(new Color(102, 196, 166))
-                    .Build();
+        embed.WithTitle(setVibe.Title)
+             .WithThumbnailUrl(Context.User.GetAvatarUrl())
+             .AddField("Channel", setVibe.Author, true)
+             .AddField("Duration", setVibe.Duration, true)
+             .AddField("Position", pos, true);
 
-        await RespondAsync(embed: embed);
+        await RespondAsync(embed: embed.Build());
     }
 }

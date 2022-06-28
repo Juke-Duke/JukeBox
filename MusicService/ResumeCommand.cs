@@ -8,9 +8,14 @@ public partial class MusicSlashCommands
     [SlashCommand("resume", "Resume JukeBox's current vibe.")]
     public async Task ResumeCommandAsync()
     {
+        var embed = new EmbedBuilder().WithColor(102, 196, 166);
+
         if (!_audioService.HasPlayer(Context.Guild.Id))
         {
-            await RespondAsync("❌ JukeBox is not in a vibe session.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("JukeBox is not in a vibe session.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
@@ -18,13 +23,19 @@ public partial class MusicSlashCommands
 
         if (userVoiceState.VoiceChannel is null)
         {
-            await RespondAsync("❌ You must be in a voice channel to resume JukeBox's vibe.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("You must be in a voice channel to resume the vibe.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
         if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
         {
-            await RespondAsync("❌ You must be in the same voice channel to resume JukeBox's vibe.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("You must be in the same voice channel to resume the vibe.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
@@ -32,11 +43,19 @@ public partial class MusicSlashCommands
 
         if (jukeBox.State != PlayerState.Paused)
         {
-            await RespondAsync("❌ JukeBox's vibe is not paused.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("JukeBox's vibe is not paused.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
         await jukeBox.ResumeAsync();
-        await RespondAsync("JukeBox's vibe resumed.");
+
+        embed.WithAuthor($"✅ Vibe Resumed by {Context.User.Username}")
+             .WithTitle($"JukeBox's vibe resumed.")
+             .WithThumbnailUrl(Context.User.GetAvatarUrl());
+
+        await RespondAsync(embed: embed.Build());
     }
 }

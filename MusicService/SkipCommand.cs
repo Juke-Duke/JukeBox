@@ -8,9 +8,14 @@ public partial class MusicSlashCommands
     [SlashCommand("skip", "Skip JukeBox's current vibe.")]
     public async Task SkipCommandAsync()
     {
+        var embed = new EmbedBuilder().WithColor(102, 196, 166);
+
         if (!_audioService.HasPlayer(Context.Guild.Id))
         {
-            await RespondAsync("❌ JukeBox is not in a vibe session.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("JukeBox is not in a vibe session.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
@@ -18,13 +23,19 @@ public partial class MusicSlashCommands
 
         if (userVoiceState.VoiceChannel is null)
         {
-            await RespondAsync("❌ You must be in a voice channel to skip JukeBox's vibe.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("You must be in a voice channel to skip the vibe.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
         if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
         {
-            await RespondAsync("❌ You must be in the same voice channel to skip JukeBox's vibe.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("You must be in the same voice channel to skip the vibe.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
@@ -32,31 +43,22 @@ public partial class MusicSlashCommands
 
         if (jukeBox.State == PlayerState.NotPlaying)
         {
-            await RespondAsync("❌ JukeBox has no vibe currently.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("Jukebox has no vibe currently.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
-        var skipEmbed = new EmbedBuilder()
-                    .WithAuthor("Vibe Skipped")
-                    .WithTitle(jukeBox.CurrentTrack!.Title)
-                    .WithColor(new Color(102, 196, 166))
-                    .Build();
+        var skippedVibe = jukeBox.CurrentTrack!;
 
         await jukeBox.SkipAsync();
-        await RespondAsync(embed: skipEmbed);
 
-        if (jukeBox.State != PlayerState.NotPlaying)
-        {
-            var nowEmbed = new EmbedBuilder()
-                    .WithAuthor("Vibe Now Playing")
-                    .WithTitle(jukeBox.CurrentTrack!.Title)
-                    .AddField("Channel", jukeBox.CurrentTrack!.Author, true)
-                    .AddField("Timestamp", $"{jukeBox.Position.Position.ToString(@"hh\:mm\:ss")} / {jukeBox.CurrentTrack!.Duration.ToString(@"hh\:mm\:ss")}", true)
-                    .AddField("Next Vibe", jukeBox.Queue.FirstOrDefault()?.Title ?? "-", true)
-                    .WithColor(new Color(102, 196, 166))
-                    .Build();
+        embed.WithAuthor($"✅ Vibe Skipped by {Context.User.Username}")
+             .WithTitle(skippedVibe.Title)
+             .AddField("Current Vibe", jukeBox.CurrentTrack?.Title ?? "-")
+             .WithThumbnailUrl(Context.User.GetAvatarUrl());
 
-            await FollowupAsync(embed: nowEmbed);
-        }
+        await RespondAsync(embed: embed.Build());
     }
 }

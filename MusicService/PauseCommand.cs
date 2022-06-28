@@ -8,9 +8,14 @@ public partial class MusicSlashCommands
     [SlashCommand("pause", "Pause JukeBox's current vibe.")]
     public async Task PauseCommandAsync()
     {
+        var embed = new EmbedBuilder().WithColor(102, 196, 166);
+
         if (!_audioService.HasPlayer(Context.Guild.Id))
         {
-            await RespondAsync("❌ JukeBox is not in a vibe session.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("JukeBox is not in a vibe session.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
@@ -18,13 +23,19 @@ public partial class MusicSlashCommands
 
         if (userVoiceState.VoiceChannel is null)
         {
-            await RespondAsync("❌ You must be in a voice channel to pause JukeBox.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("You must be in a voice channel to pause the vibe.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
         if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
         {
-            await RespondAsync("❌ You must be in the same voice channel to pause JukeBox.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("You must be in the same voice channel to pause the vibe.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
@@ -32,11 +43,19 @@ public partial class MusicSlashCommands
 
         if (jukeBox.State == PlayerState.Paused)
         {
-            await RespondAsync("❌ JukeBox is already paused.");
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("Vibe is already paused.");
+
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
         await jukeBox.PauseAsync();
-        await RespondAsync("JukeBox's vibe paused.");
+
+        embed.WithAuthor($"✅ Vibe Paused by {Context.User.Username}")
+             .WithTitle($"JukeBox's vibe paused.")
+             .WithThumbnailUrl(Context.User.GetAvatarUrl());
+
+        await RespondAsync(embed: embed.Build());
     }
 }
