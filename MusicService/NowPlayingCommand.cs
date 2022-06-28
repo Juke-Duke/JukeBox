@@ -5,34 +5,34 @@ using Lavalink4NET.Player;
 namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
 {
-    [SlashCommand("nowplaying", "Whats poppin atm")]
+    [SlashCommand("nowplaying", "Display JukeBox's current vibe.")]
     public async Task NowPlayingCommandAsync()
     {
         if (!_audioService.HasPlayer(Context.Guild.Id))
         {
-            await RespondAsync("Stop playing with me");
+            await RespondAsync("❌ JukeBox is not in a vibe session.");
             return;
         }
 
-        var player = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
+        var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
 
-        if (player.State == PlayerState.NotPlaying)
+        if (jukeBox.State == PlayerState.NotPlaying)
         {
-            await RespondAsync("Playing your mother rn");
+            await RespondAsync("❌ JukeBox has no vibe currently.");
             return;
         }
 
-        var song = player.CurrentTrack!;
+        var vibe = jukeBox.CurrentTrack!;
 
         var embed = new EmbedBuilder()
-                   .WithTitle($"Current Heat: {song.Title}")
-                   .AddField("Channel", song.Author, true)
-                   .AddField("Timestamp", $"{player.Position.Position.ToString(@"hh\:mm\:ss")} / {song.Duration}", true)
-                   .AddField("Next Song", player.Queue.FirstOrDefault()?.Title ?? "-", true)
+                   .WithAuthor("Current Vibe")
+                   .WithTitle(vibe.Title)
+                   .AddField("Channel", vibe.Author, true)
+                   .AddField("Timestamp", $"{jukeBox.Position.Position.ToString(@"hh\:mm\:ss")} / {vibe.Duration.ToString(@"hh\:mm\:ss")}", true)
+                   .AddField("Next Vibe", jukeBox.Queue.FirstOrDefault()?.Title ?? "-", true)
                    .WithColor(new Color(102, 196, 166))
                    .Build();
 
-        await RespondAsync(embed: embed);
-        await FollowupAsync(song.Source);
+        await RespondAsync(vibe.Source, embed: embed);
     }
 }

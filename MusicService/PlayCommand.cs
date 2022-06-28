@@ -7,52 +7,54 @@ using Lavalink4NET.Rest;
 namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
 {
-    [SlashCommand("play", "What we vibin to?")]
+    [SlashCommand("play", "Set JukeBox's current vibe.")]
     public async Task PlayCommandAsync(string track)
     {
         var userVoiceState = (Context.User as IVoiceState)!;
 
         if (userVoiceState.VoiceChannel is null)
         {
-            await RespondAsync("Get in call first buddy");
+            await RespondAsync("❌ You must be in a voice channel to set JukeBox's vibe.");
             return;
         }
 
         if (!_audioService.HasPlayer(Context.Guild.Id))
         {
-            await RespondAsync("Ye bro? Invite me first bozo!");
+            await RespondAsync("❌ JukeBox is not in a vibe session.");
             return;
         }
 
         if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
         {
-            await RespondAsync("In here!!!");
+            await RespondAsync("❌ You must be in the same voice channel to set JukeBox's vibe.");
             return;
         }
 
-        var player = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
+        var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
 
-        var song = await _audioService.GetTrackAsync(track, SearchMode.YouTube);
+        var vibe = await _audioService.GetTrackAsync(track, SearchMode.YouTube);
 
-        if (song is null)
+        if (vibe is null)
         {
-            await RespondAsync("Bro english my mans");
+            await RespondAsync("❌ No vibe could be found for JukeBox.");
             return;
         }
 
-        var pos = await player.PlayAsync(song);
+        var pos = await jukeBox.PlayAsync(vibe);
         // using var artworkService = new ArtworkService();
         // var artworkUri = (await artworkService.ResolveAsync(song))!;
 
         var embedBuilder = new EmbedBuilder();
         if (pos > 0)
-            embedBuilder.WithTitle($"Queued up: {song.Title} to the track by DJ {Context.User.Discriminator}");
+            embedBuilder.WithAuthor($"Vibe Queued");
         else
-            embedBuilder.WithTitle($"Now playing: {song.Title} by DJ {Context.User.Username}");
+            embedBuilder.WithAuthor($"Vibe Now Playing");
 
         var embed = embedBuilder
-                    .AddField("Channel", song.Author, true)
-                    .AddField("Duration", song.Duration, true)
+                    .WithTitle(vibe.Title)
+                    .WithThumbnailUrl(Context.User.GetAvatarUrl())
+                    .AddField("Channel", vibe.Author, true)
+                    .AddField("Duration", vibe.Duration, true)
                     .AddField("Position", pos, true)
                     .WithColor(new Color(102, 196, 166))
                     .Build();

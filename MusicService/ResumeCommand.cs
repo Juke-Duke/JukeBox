@@ -5,12 +5,12 @@ using Lavalink4NET.Player;
 namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
 {
-    [SlashCommand("resume", "Run that shizz")]
+    [SlashCommand("resume", "Resume JukeBox's current vibe.")]
     public async Task ResumeCommandAsync()
     {
         if (!_audioService.HasPlayer(Context.Guild.Id))
         {
-            await RespondAsync("Im not gonna lie, I'm tryna resume my jack off session rn.");
+            await RespondAsync("❌ JukeBox is not in a vibe session.");
             return;
         }
 
@@ -18,25 +18,25 @@ public partial class MusicSlashCommands
 
         if (userVoiceState.VoiceChannel is null)
         {
-            await RespondAsync("Resume typing bro bro");
+            await RespondAsync("❌ You must be in a voice channel to resume JukeBox's vibe.");
             return;
         }
 
         if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
         {
-            await RespondAsync("I know you want to resume this, its fye on gah, and you aint even here to hear it");
+            await RespondAsync("❌ You must be in the same voice channel to resume JukeBox's vibe.");
             return;
         }
 
-        var player = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
+        var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
 
-        if (player.State != PlayerState.Paused)
+        if (jukeBox.State != PlayerState.Paused)
         {
-            await RespondAsync("Bro this shizz already playing u skitzo");
+            await RespondAsync("❌ JukeBox's vibe is not paused.");
             return;
         }
 
-        await player.ResumeAsync();
-        await RespondAsync("We back.");
+        await jukeBox.ResumeAsync();
+        await RespondAsync("JukeBox's vibe resumed.");
     }
 }

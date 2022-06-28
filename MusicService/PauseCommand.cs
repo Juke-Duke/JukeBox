@@ -5,18 +5,12 @@ using Lavalink4NET.Player;
 namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
 {
-    // Checks to see if the bot is in a voice channel
-    // Checks to see if the user is in a voice channel
-    // Checks to see if the bot is in the same voice channel as the user
-    // Checks to see if the bot is already paused
-    // Pauses if the bot is playing
-
-    [SlashCommand("pause", "Pause.")]
+    [SlashCommand("pause", "Pause JukeBox's current vibe.")]
     public async Task PauseCommandAsync()
     {
         if (!_audioService.HasPlayer(Context.Guild.Id))
         {
-            await RespondAsync("I'm off the grid right now bro");
+            await RespondAsync("❌ JukeBox is not in a vibe session.");
             return;
         }
 
@@ -24,25 +18,25 @@ public partial class MusicSlashCommands
 
         if (userVoiceState.VoiceChannel is null)
         {
-            await RespondAsync("Come in here and make me");
+            await RespondAsync("❌ You must be in a voice channel to pause JukeBox.");
             return;
         }
 
         if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
         {
-            await RespondAsync("You cant even hear me");
+            await RespondAsync("❌ You must be in the same voice channel to pause JukeBox.");
             return;
         }
 
-        var player = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
+        var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
 
-        if (player.State == PlayerState.Paused)
+        if (jukeBox.State == PlayerState.Paused)
         {
-            await RespondAsync("I am paused tho?");
+            await RespondAsync("❌ JukeBox is already paused.");
             return;
         }
 
-        await player.PauseAsync();
-        await RespondAsync("Pause.");
+        await jukeBox.PauseAsync();
+        await RespondAsync("JukeBox's vibe paused.");
     }
 }

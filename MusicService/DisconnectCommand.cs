@@ -5,12 +5,12 @@ using Lavalink4NET.Player;
 namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
 {
-    [SlashCommand("disconnect", "You can kick me, but you know where you'll end up? Back to me.")]
+    [SlashCommand("disconnect", "End the vibe session and disconnect JukeBox.")]
     public async Task DisconnectCommandAsync()
     {
         if (!_audioService.HasPlayer(Context.Guild.Id))
         {
-            await RespondAsync("Man im dead, HAHA");
+            await RespondAsync("❌ JukeBox is not in a vibe session.");
             return;
         }
 
@@ -18,19 +18,19 @@ public partial class MusicSlashCommands
 
         if (userVoiceState.VoiceChannel is null)
         {
-            await RespondAsync("Come here and kick me then daddy");
+            await RespondAsync("❌ You must be in a voice channel to disconnect JukeBox.");
             return;
         }
 
         if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
         {
-            await RespondAsync("So close, but nah");
+            await RespondAsync("❌ You must be in the same voice channel to disconnect JukeBox.");
             return;
         }
 
-        var player = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
+        var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
 
-        await player.DisconnectAsync();
-        await RespondAsync("Man fudge this, imma catch you at work");
+        await jukeBox.DisconnectAsync();
+        await RespondAsync($"JukeBox disconnected from {userVoiceState.VoiceChannel.Name}.");
     }
 }

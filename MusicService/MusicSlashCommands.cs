@@ -11,7 +11,7 @@ public partial class MusicSlashCommands : InteractionModuleBase<SocketInteractio
         _audioService = audioService;
     }
 
-    [SlashCommand("ping", "Ping me boi")]
+    [SlashCommand("ping", "Check JukeBox's vibe pulse.")]
     public async Task PingCommand()
     {
         await RespondAsync($"Pong {Context.User.Mention}!");
