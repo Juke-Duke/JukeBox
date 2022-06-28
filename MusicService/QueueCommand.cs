@@ -41,6 +41,15 @@ public partial class MusicSlashCommands
 
         var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
 
+        if (jukeBox.CurrentTrack is null)
+        {
+            embed.WithAuthor("❌ Vibe Error")
+                 .WithTitle("There are no vibes in the queue.");
+
+            await RespondAsync(embed: embed.Build());
+            return;
+        }
+
         embed.WithTitle($"Vibe Queue")
              .AddField($"Current Vibe: {jukeBox.CurrentTrack!.Title}", $"{jukeBox.CurrentTrack.Author} - {jukeBox.CurrentTrack.Duration}");
 
