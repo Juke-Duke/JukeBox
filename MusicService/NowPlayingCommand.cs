@@ -14,6 +14,8 @@ public partial class MusicSlashCommands
         {
             embed.WithAuthor("❌ Vibe Error")
                  .WithTitle("JukeBox is not in a vibe session.");
+
+            await ReplyAsync(embed: embed.Build());
             return;
         }
 
