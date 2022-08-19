@@ -15,7 +15,7 @@ public partial class MusicSlashCommands
             embed.WithAuthor("❌ Vibe Error")
                  .WithTitle("JukeBox is not in a vibe session.");
 
-            await ReplyAsync(embed: embed.Build());
+            await RespondAsync(embed: embed.Build());
             return;
         }
 
@@ -24,7 +24,7 @@ public partial class MusicSlashCommands
         if (jukeBox.State == PlayerState.NotPlaying)
         {
             embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("Ther is no vibe currently.");
+                 .WithTitle("There is no vibe currently.");
 
             await RespondAsync(embed: embed.Build());
             return;
@@ -38,6 +38,7 @@ public partial class MusicSlashCommands
              .AddField("Timestamp", $"{jukeBox.Position.Position.ToString(@"hh\:mm\:ss")} / {vibe.Duration.ToString(@"hh\:mm\:ss")}", true)
              .AddField("Next Vibe", jukeBox.Queue.FirstOrDefault()?.Title ?? "-", true);
 
-        await RespondAsync(vibe.Source, embed: embed.Build());
+        await RespondAsync(embed: embed.Build());
+        await FollowupAsync(vibe.Source);
     }
 }
