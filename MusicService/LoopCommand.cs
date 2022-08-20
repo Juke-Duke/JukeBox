@@ -54,13 +54,13 @@ public partial class MusicSlashCommands
 
         if (jukeBox.IsLooping)
         {
-            embed.WithAuthor($"✅ Vibe Looped by {Context.User.Username}")
+            embed.WithAuthor($"🔁 Vibe Looped by {Context.User.Username}")
                  .WithTitle($"JukeBox's vibe is now looping.")
                  .WithThumbnailUrl(Context.User.GetAvatarUrl());
         }
         else
         {
-            embed.WithAuthor($"✅ Vibe Stopped Looping by {Context.User.Username}")
+            embed.WithAuthor($"🔁 Vibe Stopped Looping by {Context.User.Username}")
                  .WithTitle($"JukeBox's vibe is no longer looping.")
                  .WithThumbnailUrl(Context.User.GetAvatarUrl());
         }

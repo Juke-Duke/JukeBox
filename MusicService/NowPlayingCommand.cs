@@ -32,7 +32,7 @@ public partial class MusicSlashCommands
 
         var vibe = jukeBox.CurrentTrack!;
 
-        embed.WithAuthor("Current Vibe")
+        embed.WithAuthor($"Current Vibe {(jukeBox.IsLooping ? "🔁" : "")}")
              .WithTitle(vibe.Title)
              .AddField("Channel", vibe.Author, true)
              .AddField("Timestamp", $"{jukeBox.Position.Position.ToString(@"hh\:mm\:ss")} / {vibe.Duration.ToString(@"hh\:mm\:ss")}", true)
