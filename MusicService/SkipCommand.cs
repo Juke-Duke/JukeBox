@@ -52,6 +52,8 @@ public partial class MusicSlashCommands
 
         var skippedVibe = jukeBox.CurrentTrack!;
 
+        jukeBox.IsLooping = false;
+
         await jukeBox.SkipAsync();
 
         embed.WithAuthor($"✅ Vibe Skipped by {Context.User.Username}")
