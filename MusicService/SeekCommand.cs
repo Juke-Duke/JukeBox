@@ -6,7 +6,7 @@ namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
 {
     [SlashCommand("seek", "Seek a timestamp in JukeBox's current vibe.")]
-    public async Task SeekCommandAsync(string timeStamp)
+    public async Task SeekCommandAsync([Summary("timeStamp", "The timestamp of the vibe to seek to in 00:00:00 format.")] string timeStamp)
     {
         var embed = new EmbedBuilder().WithColor(102, 196, 166);
 

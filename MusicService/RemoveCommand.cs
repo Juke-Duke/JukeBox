@@ -6,7 +6,7 @@ namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
 {
     [SlashCommand("remove", "Remove a vibe from JukeBox's queue.")]
-    public async Task RemoveCommandAsync(int position)
+    public async Task RemoveCommandAsync([Summary("position", "The position of the vibe to remove from queue.")] int position)
     {
         var embed = new EmbedBuilder().WithColor(102, 196, 166);
 
