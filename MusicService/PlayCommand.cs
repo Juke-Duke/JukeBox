@@ -12,15 +12,6 @@ public partial class MusicSlashCommands
     {
         var embed = new EmbedBuilder().WithColor(102, 196, 166);
 
-        if (!_audioService.HasPlayer(Context.Guild.Id))
-        {
-            embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("JukeBox is not in a vibe session.");
-
-            await RespondAsync(embed: embed.Build());
-            return;
-        }
-
         var userVoiceState = (Context.User as IVoiceState)!;
 
         if (userVoiceState.VoiceChannel is null)
@@ -32,7 +23,7 @@ public partial class MusicSlashCommands
             return;
         }
 
-        if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
+        if (_audioService.HasPlayer(Context.Guild.Id) && Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
         {
             embed.WithAuthor("❌ Vibe Error")
                  .WithTitle("You must be in the same voice channel to set the vibe.");
@@ -41,7 +32,6 @@ public partial class MusicSlashCommands
             return;
         }
 
-        var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
         var setVibe = await _audioService.GetTrackAsync(vibe, SearchMode.YouTube);
 
         if (setVibe is null)
@@ -52,6 +42,16 @@ public partial class MusicSlashCommands
             await RespondAsync(embed: embed.Build());
             return;
         }
+
+        bool joinedThroughPlay = false;
+
+        if (!_audioService.HasPlayer(Context.Guild.Id))
+        {
+            await JoinCommandAsync();
+            joinedThroughPlay = true;
+        }
+
+        var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
 
         var pos = await jukeBox.PlayAsync(setVibe);
         // using var artworkService = new ArtworkService();
@@ -67,6 +67,9 @@ public partial class MusicSlashCommands
              .AddField("Channel", setVibe.Author, true)
              .AddField("Duration", setVibe.Duration, true)
              .AddField("Position", pos, true);
+
+        if (joinedThroughPlay)
+            await ReplyAsync(embed: embed.Build());
 
         await RespondAsync(embed: embed.Build());
     }

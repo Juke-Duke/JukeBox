@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using JukeBox;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
+using Lavalink4NET.Tracking;
 
 IHost host = Host.CreateDefaultBuilder()
     .ConfigureServices(services =>
@@ -20,9 +21,14 @@ IHost host = Host.CreateDefaultBuilder()
             .AddSingleton<InteractionHandler>()
             .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>()
             .AddSingleton<IAudioService, LavalinkNode>()
+            .AddSingleton<InactivityTrackingService>()
+            .AddSingleton<InactivityTrackingOptions>(new InactivityTrackingOptions
+            {
+                TrackInactivity = true,
+                DisconnectDelay = TimeSpan.FromMinutes(30)
+            })
             .AddSingleton(new LavalinkNodeOptions());
     }).Build();
-
 
 using (var scope = host.Services.CreateScope())
 {
@@ -33,6 +39,7 @@ using (var scope = host.Services.CreateScope())
     client.Ready += async () =>
     {
         await scope.ServiceProvider.GetRequiredService<IAudioService>().InitializeAsync();
+        scope.ServiceProvider.GetRequiredService<InactivityTrackingService>().BeginTracking();
         await slashCommands.RegisterCommandsGloballyAsync();
     };
 
