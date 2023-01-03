@@ -65,7 +65,7 @@ public partial class MusicSlashCommands
         embed.WithTitle(setVibe.Title)
              .WithThumbnailUrl(Context.User.GetAvatarUrl())
              .AddField("Channel", setVibe.Author, true)
-             .AddField("Duration", setVibe.Duration, true)
+             .AddField("Duration", setVibe.Duration.ToString("d':'hh':'mm':'ss"), true)
              .AddField("Position", pos, true);
 
         if (joinedThroughPlay)

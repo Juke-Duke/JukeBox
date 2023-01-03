@@ -72,7 +72,7 @@ public partial class MusicSlashCommands
 
         await jukeBox.SeekPositionAsync(validTimeStamp);
 
-        embed.WithAuthor($"✅ Vibe Seeked to {validTimeStamp} by {Context.User.Username}")
+        embed.WithAuthor($"✅ Vibe Seeked to {validTimeStamp.ToString("d':'hh':'mm':'ss")} by {Context.User.Username}")
              .WithTitle(jukeBox.CurrentTrack!.Title)
              .AddField("Current Vibe", jukeBox.CurrentTrack?.Title ?? "-")
              .WithThumbnailUrl(Context.User.GetAvatarUrl());

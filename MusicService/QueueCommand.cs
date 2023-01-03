@@ -51,11 +51,11 @@ public partial class MusicSlashCommands
         }
 
         embed.WithTitle($"Vibe Queue")
-             .AddField($"Current Vibe: {jukeBox.CurrentTrack!.Title}", $"{jukeBox.CurrentTrack.Author} - {jukeBox.CurrentTrack.Duration}");
+             .AddField($"Current Vibe: {jukeBox.CurrentTrack!.Title}", $"{jukeBox.CurrentTrack.Author} - {jukeBox.CurrentTrack.Duration.ToString("d':'hh':'mm':'ss")}");
 
         int pos = 1;
         foreach (var vibe in jukeBox.Queue)
-            embed.AddField($"[{pos++}]. {vibe.Title}", $"{vibe.Author} - {vibe.Duration}");
+            embed.AddField($"[{pos++}]. {vibe.Title}", $"{vibe.Author} - {vibe.Duration.ToString("d':'hh':'mm':'ss")}");
 
         await RespondAsync(embed: embed.Build());
     }
