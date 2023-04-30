@@ -6,6 +6,8 @@ using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Tracking;
 
+using static Discord.GatewayIntents;
+
 IHost host = Host.CreateDefaultBuilder()
     .ConfigureServices(services =>
     {
@@ -13,7 +15,7 @@ IHost host = Host.CreateDefaultBuilder()
             .AddHostedService<JukeBoxService>()
             .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
             {
-                GatewayIntents = GatewayIntents.AllUnprivileged & ~GatewayIntents.GuildInvites & ~GatewayIntents.GuildScheduledEvents,
+                GatewayIntents = AllUnprivileged & ~GuildInvites & ~GuildScheduledEvents,
                 AlwaysDownloadUsers = true,
                 LogLevel = LogSeverity.Debug
             }))
@@ -22,7 +24,7 @@ IHost host = Host.CreateDefaultBuilder()
             .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>()
             .AddSingleton<IAudioService, LavalinkNode>()
             .AddSingleton<InactivityTrackingService>()
-            .AddSingleton<InactivityTrackingOptions>(new InactivityTrackingOptions
+            .AddSingleton(new InactivityTrackingOptions
             {
                 TrackInactivity = true,
                 DisconnectDelay = TimeSpan.FromMinutes(30)
