@@ -8,6 +8,6 @@ public partial class MusicSlashCommands
     [SlashCommand("join", "Start the vibe session and add JukeBox.")]
     public async Task JoinCommandAsync()
     {
-        await RespondAsync("/join is depracted, use /play and JukeBox will join in with the good vibes");
+        await RespondAsync("/join is deprecated, use /play and JukeBox will join in with the good vibes");
     }
 }
