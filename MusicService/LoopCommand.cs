@@ -50,9 +50,10 @@ public partial class MusicSlashCommands
             return;
         }
 
-        jukeBox.IsLooping = !jukeBox.IsLooping;
+        var isLooping = jukeBox.LoopMode is not PlayerLoopMode.None;
+        jukeBox.LoopMode = isLooping ? PlayerLoopMode.None : PlayerLoopMode.Track;
 
-        if (jukeBox.IsLooping)
+        if (isLooping)
         {
             embed.WithAuthor($"🔁 Vibe Looped by {Context.User.Username}")
                  .WithTitle($"JukeBox's vibe is now looping.")

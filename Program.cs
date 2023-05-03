@@ -41,7 +41,7 @@ using (var scope = host.Services.CreateScope())
     client.Ready += async () =>
     {
         await scope.ServiceProvider.GetRequiredService<IAudioService>().InitializeAsync();
-        scope.ServiceProvider.GetRequiredService<InactivityTrackingService>().BeginTracking();
+        scope.ServiceProvider.GetRequiredService<InactivityTrackingService>();
         await slashCommands.RegisterCommandsGloballyAsync();
     };
 
