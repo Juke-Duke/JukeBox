@@ -35,7 +35,7 @@ public partial class MusicSlashCommands
         embed.WithAuthor($"Current Vibe {(jukeBox.IsLooping ? "🔁" : "")}")
              .WithTitle(vibe.Title)
              .AddField("Channel", vibe.Author, true)
-             .AddField("Timestamp", $"{jukeBox.Position.Position.ToString("d':'hh':'mm':'ss")} / {vibe.Duration.ToString("d':'hh':'mm':'ss")}", true)
+             .AddField("Timestamp", $"{jukeBox.Position.Position:d':'hh':'mm':'ss} / {vibe.Duration:d':'hh':'mm':'ss}", true)
              .AddField("Next Vibe", jukeBox.Queue.FirstOrDefault()?.Title ?? "-", true);
 
         await RespondAsync(embed: embed.Build());

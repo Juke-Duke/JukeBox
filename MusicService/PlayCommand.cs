@@ -43,12 +43,22 @@ public partial class MusicSlashCommands
             return;
         }
 
-        bool joinedThroughPlay = false;
-
         if (!_audioService.HasPlayer(Context.Guild.Id))
         {
-            await JoinCommandAsync();
-            joinedThroughPlay = true;
+            try
+            {
+                await _audioService.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id, userVoiceState.VoiceChannel.Id, true);
+
+                embed.WithAuthor($"✅ JukeBox Joined by {Context.User.Username}")
+                    .WithTitle($"JukeBox has joined {userVoiceState.VoiceChannel.Name}.")
+                    .WithThumbnailUrl(Context.User.GetAvatarUrl());
+
+                await RespondAsync(embed: embed.Build());
+            }
+            catch (Exception e)
+            {
+                await RespondAsync($"Failed to join the voice channel: {e.Message}");
+            }
         }
 
         var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
@@ -68,9 +78,6 @@ public partial class MusicSlashCommands
              .AddField("Duration", setVibe.Duration.ToString("d':'hh':'mm':'ss"), true)
              .AddField("Position", pos, true);
 
-        if (joinedThroughPlay)
-            await ReplyAsync(embed: embed.Build());
-
-        await RespondAsync(embed: embed.Build());
+        await FollowupAsync(embed: embed.Build());
     }
 }
