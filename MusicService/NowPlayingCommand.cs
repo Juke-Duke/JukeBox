@@ -31,14 +31,15 @@ public partial class MusicSlashCommands
         }
 
         var vibe = jukeBox.CurrentTrack!;
+        var isLooping = jukeBox.LoopMode is not PlayerLoopMode.None;
 
-        embed.WithAuthor($"Current Vibe {(jukeBox.IsLooping ? "🔁" : "")}")
+        embed.WithAuthor($"Current Vibe {(isLooping ? "🔁" : "")}")
              .WithTitle(vibe.Title)
              .AddField("Channel", vibe.Author, true)
              .AddField("Timestamp", $"{jukeBox.Position.Position:d':'hh':'mm':'ss} / {vibe.Duration:d':'hh':'mm':'ss}", true)
              .AddField("Next Vibe", jukeBox.Queue.FirstOrDefault()?.Title ?? "-", true);
 
         await RespondAsync(embed: embed.Build());
-        await FollowupAsync(vibe.Source);
+        await FollowupAsync(vibe.Uri!.ToString());
     }
 }

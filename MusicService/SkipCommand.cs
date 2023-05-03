@@ -52,7 +52,7 @@ public partial class MusicSlashCommands
 
         var skippedVibe = jukeBox.CurrentTrack!;
 
-        jukeBox.IsLooping = false;
+        jukeBox.LoopMode = PlayerLoopMode.None;
 
         await jukeBox.SkipAsync();
 
