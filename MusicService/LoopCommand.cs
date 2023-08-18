@@ -52,6 +52,7 @@ public partial class MusicSlashCommands
 
         var isLooping = jukeBox.LoopMode is not PlayerLoopMode.None;
         jukeBox.LoopMode = isLooping ? PlayerLoopMode.None : PlayerLoopMode.Track;
+        isLooping = !isLooping;
 
         if (isLooping)
         {
