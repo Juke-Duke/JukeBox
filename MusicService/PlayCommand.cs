@@ -68,7 +68,7 @@ public partial class MusicSlashCommands
             embed.WithAuthor($"✅ Vibe Set by {Context.User.Username}");
 
         embed.WithTitle(setVibe.Title)
-             .WithThumbnailUrl(GetYoutubeThumbnailUrl(setVibe.Uri))
+             .WithThumbnailUrl(GetYoutubeThumbnailUrl(setVibe.Uri) ?? Context.User.GetAvatarUrl())
              .AddField("Channel", setVibe.Author, true)
              .AddField("Duration", setVibe.Duration.ToString("d':'hh':'mm':'ss"), true)
              .AddField("Position", pos, true);
@@ -76,60 +76,62 @@ public partial class MusicSlashCommands
         await RespondAsync(embed: embed.Build());
     }
 
-    private static string GetYoutubeThumbnailUrl(Uri? videoUrl)
+    private static string? GetYoutubeThumbnailUrl(Uri? videoUrl)
     {
-        string fallbackThumbnailUrl = "";
-        if (videoUrl == null) return fallbackThumbnailUrl;
+        if (videoUrl == null)
+            return null;
 
-        List<string> paths = videoUrl.LocalPath         // path: "/shorts/videoId" or "/watch"
-            .Split("/")                                 // ["", "shorts", "videoId"] or ["", "watch"]
-            .Where(path => path.Length != 0).ToList();  // ["shorts", "videoId"] or ["watch"]
+        var paths = videoUrl.LocalPath          // path: "/shorts/videoId" or "/watch"
+            .Split("/")                         // ["", "shorts", "videoId"] or ["", "watch"]
+            .Where(path => path.Length != 0)    // ["shorts", "videoId"] or ["watch"]
+            .ToList();
         // should be [ "shorts", "videoId" ] or ["watch"]
 
-        string videoId;
-        if (paths[0] == "watch") videoId = ParseWatchId(videoUrl);
-        else if (paths[0] == "shorts") videoId = ParseShortsId(videoUrl);
-        else return fallbackThumbnailUrl;
+        var videoId = paths[0] switch
+        {
+            "shorts" => ParseShortsId(videoUrl),
+            "watch" => ParseWatchId(videoUrl),
+            _ => null
+        };
 
         return $"https://i.ytimg.com/vi/{videoId}/hqdefault.jpg";
     }
 
     // URL should be /watch?v=videoId
-
-    private static string ParseWatchId(Uri videoUrl)
+    private static string? ParseWatchId(Uri videoUrl)
     {
-        string fallbackThumbnailUrl = "";
         try
         {
             // will be in format: `?v=videoId&key=value&...`
-            string urlQuery = videoUrl.Query[1..]; // skip the '?'
-            string[] queries = videoUrl.Query[1..].Split("&"); // parse to array of `key=value`
-            string videoKey = "v";
-            string videoQuery = queries.First(query => query.Split("=")[0] == videoKey);
+            var urlQuery = videoUrl.Query[1..]; // skip the '?'
+            var queries = videoUrl.Query[1..].Split("&"); // parse to array of `key=value`
+            var videoKey = "v";
+            var videoQuery = queries.First(query => query.Split("=")[0] == videoKey);
 
-            if (videoKey == null) return fallbackThumbnailUrl;
-            string videoId = videoQuery.Split('=')[1];
+            if (videoKey == null)
+                return null;
+
+            var videoId = videoQuery.Split('=')[1];
 
             return videoId;
         }
         catch
         {
-            return fallbackThumbnailUrl; // failed parse
+            return null; // failed parse
         }
     }
 
     // URL should be /shorts/videoId
-    private static string ParseShortsId(Uri videoUrl)
+    private static string? ParseShortsId(Uri videoUrl)
     {
-        string fallbackThumbnailUrl = "";
         try
         {
-            string[] paths = videoUrl.Segments; // should be [ "/", "shorts/", "videoId" ]
+            var paths = videoUrl.Segments; // should be [ "/", "shorts/", "videoId" ]
             return paths.Last();
         }
         catch
         {
-            return fallbackThumbnailUrl;
+            return null;
         }
     }
 }
