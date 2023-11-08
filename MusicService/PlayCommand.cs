@@ -78,7 +78,7 @@ public partial class MusicSlashCommands
 
     private static string? GetYoutubeThumbnailUrl(Uri? videoUrl)
     {
-        if (videoUrl == null)
+        if (videoUrl is null)
             return null;
 
         var paths = videoUrl.LocalPath          // path: "/shorts/videoId" or "/watch"
@@ -89,10 +89,13 @@ public partial class MusicSlashCommands
 
         var videoId = paths[0] switch
         {
-            "shorts" => ParseShortsId(videoUrl),
             "watch" => ParseWatchId(videoUrl),
+            "shorts" => ParseShortsId(videoUrl),
             _ => null
         };
+
+        if (videoId is null)
+            return null;
 
         return $"https://i.ytimg.com/vi/{videoId}/hqdefault.jpg";
     }
@@ -104,13 +107,9 @@ public partial class MusicSlashCommands
         {
             // will be in format: `?v=videoId&key=value&...`
             var urlQuery = videoUrl.Query[1..]; // skip the '?'
-            var queries = videoUrl.Query[1..].Split("&"); // parse to array of `key=value`
+            var queries = urlQuery.Split("&"); // parse to array of `key=value`
             var videoKey = "v";
             var videoQuery = queries.First(query => query.Split("=")[0] == videoKey);
-
-            if (videoKey == null)
-                return null;
-
             var videoId = videoQuery.Split('=')[1];
 
             return videoId;
@@ -124,15 +123,12 @@ public partial class MusicSlashCommands
     // URL should be /shorts/videoId
     private static string? ParseShortsId(Uri videoUrl)
     {
-        try
-        {
-            var paths = videoUrl.Segments; // should be [ "/", "shorts/", "videoId" ]
-            return paths.Last();
-        }
-        catch
-        {
+        var paths = videoUrl.Segments; // should be [ "/", "shorts/", "videoId" ]
+
+        if (paths.Length == 0)
             return null;
-        }
+
+        return paths.Last();
     }
 }
 
