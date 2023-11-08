@@ -68,11 +68,71 @@ public partial class MusicSlashCommands
             embed.WithAuthor($"✅ Vibe Set by {Context.User.Username}");
 
         embed.WithTitle(setVibe.Title)
-             .WithThumbnailUrl(Context.User.GetAvatarUrl())
+             .WithThumbnailUrl(GetYoutubeThumbnailUrl(setVibe.Uri) ?? Context.User.GetAvatarUrl())
              .AddField("Channel", setVibe.Author, true)
              .AddField("Duration", setVibe.Duration.ToString("d':'hh':'mm':'ss"), true)
              .AddField("Position", pos, true);
 
         await RespondAsync(embed: embed.Build());
     }
+
+    private static string? GetYoutubeThumbnailUrl(Uri? videoUrl)
+    {
+        if (videoUrl == null)
+            return null;
+
+        var paths = videoUrl.LocalPath          // path: "/shorts/videoId" or "/watch"
+            .Split("/")                         // ["", "shorts", "videoId"] or ["", "watch"]
+            .Where(path => path.Length != 0)    // ["shorts", "videoId"] or ["watch"]
+            .ToList();
+        // should be [ "shorts", "videoId" ] or ["watch"]
+
+        var videoId = paths[0] switch
+        {
+            "shorts" => ParseShortsId(videoUrl),
+            "watch" => ParseWatchId(videoUrl),
+            _ => null
+        };
+
+        return $"https://i.ytimg.com/vi/{videoId}/hqdefault.jpg";
+    }
+
+    // URL should be /watch?v=videoId
+    private static string? ParseWatchId(Uri videoUrl)
+    {
+        try
+        {
+            // will be in format: `?v=videoId&key=value&...`
+            var urlQuery = videoUrl.Query[1..]; // skip the '?'
+            var queries = videoUrl.Query[1..].Split("&"); // parse to array of `key=value`
+            var videoKey = "v";
+            var videoQuery = queries.First(query => query.Split("=")[0] == videoKey);
+
+            if (videoKey == null)
+                return null;
+
+            var videoId = videoQuery.Split('=')[1];
+
+            return videoId;
+        }
+        catch
+        {
+            return null; // failed parse
+        }
+    }
+
+    // URL should be /shorts/videoId
+    private static string? ParseShortsId(Uri videoUrl)
+    {
+        try
+        {
+            var paths = videoUrl.Segments; // should be [ "/", "shorts/", "videoId" ]
+            return paths.Last();
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }
+
