@@ -1,6 +1,7 @@
 using Discord;
 using Discord.Interactions;
-using Lavalink4NET.Player;
+using Lavalink4NET.Players;
+using Lavalink4NET.Players.Queued;
 
 namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
@@ -10,51 +11,25 @@ public partial class MusicSlashCommands
     {
         var embed = new EmbedBuilder().WithColor(102, 196, 166);
 
-        if (!_audioService.HasPlayer(Context.Guild.Id))
+        var jukeBox = await GetJukeBoxAsync(embed);
+
+        if (jukeBox is null)
+            return;
+
+        if (jukeBox.State is PlayerState.NotPlaying)
         {
             embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("JukeBox is not in a vibe session.");
+                 .WithTitle("There is no vibe currently.");
 
             await RespondAsync(embed: embed.Build());
             return;
         }
 
-        var userVoiceState = (Context.User as IVoiceState)!;
+        jukeBox.RepeatMode = jukeBox.RepeatMode is TrackRepeatMode.Track
+            ? TrackRepeatMode.None
+            : TrackRepeatMode.Track;
 
-        if (userVoiceState.VoiceChannel is null)
-        {
-            embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("You must be in a voice channel to loop the vibe.");
-
-            await RespondAsync(embed: embed.Build());
-            return;
-        }
-
-        if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
-        {
-            embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("You must be in the same voice channel to loop the vibe.");
-
-            await RespondAsync(embed: embed.Build());
-            return;
-        }
-
-        var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
-
-        if (jukeBox.State == PlayerState.NotPlaying)
-        {
-            embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("JukeBox's vibe is not playing.");
-
-            await RespondAsync(embed: embed.Build());
-            return;
-        }
-
-        var isLooping = jukeBox.LoopMode is not PlayerLoopMode.None;
-        jukeBox.LoopMode = isLooping ? PlayerLoopMode.None : PlayerLoopMode.Track;
-        isLooping = !isLooping;
-
-        if (isLooping)
+        if (jukeBox.RepeatMode is TrackRepeatMode.Track)
         {
             embed.WithAuthor($"🔁 Vibe Looped by {Context.User.Username}")
                  .WithTitle($"JukeBox's vibe is now looping.")

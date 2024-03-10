@@ -2,10 +2,10 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using JukeBox;
-using Lavalink4NET;
-using Lavalink4NET.DiscordNet;
-using Lavalink4NET.Tracking;
-
+using Lavalink4NET.Extensions;
+using Lavalink4NET.InactivityTracking.Extensions;
+using Lavalink4NET.InactivityTracking.Trackers.Idle;
+using Lavalink4NET.InactivityTracking.Trackers.Users;
 using static Discord.GatewayIntents;
 
 IHost host = Host.CreateDefaultBuilder()
@@ -13,6 +13,7 @@ IHost host = Host.CreateDefaultBuilder()
     {
         services
             .AddHostedService<JukeBoxService>()
+            .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Trace))
             .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
             {
                 GatewayIntents = AllUnprivileged & ~GuildInvites & ~GuildScheduledEvents,
@@ -21,15 +22,16 @@ IHost host = Host.CreateDefaultBuilder()
             }))
             .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
             .AddSingleton<InteractionHandler>()
-            .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>()
-            .AddSingleton<IAudioService, LavalinkNode>()
-            .AddSingleton<InactivityTrackingService>()
-            .AddSingleton(new InactivityTrackingOptions
+            .AddLavalink()
+            .AddInactivityTracking()
+            .Configure<IdleInactivityTrackerOptions>(config =>
             {
-                TrackInactivity = true,
-                DisconnectDelay = TimeSpan.FromMinutes(30)
+                config.Timeout = TimeSpan.FromMinutes(30);
             })
-            .AddSingleton(new LavalinkNodeOptions());
+            .Configure<UsersInactivityTrackerOptions>(config =>
+            {
+                config.Timeout = TimeSpan.FromSeconds(1);
+            });
     }).Build();
 
 using (var scope = host.Services.CreateScope())
@@ -40,8 +42,6 @@ using (var scope = host.Services.CreateScope())
 
     client.Ready += async () =>
     {
-        await scope.ServiceProvider.GetRequiredService<IAudioService>().InitializeAsync();
-        scope.ServiceProvider.GetRequiredService<InactivityTrackingService>();
         await slashCommands.RegisterCommandsGloballyAsync();
     };
 

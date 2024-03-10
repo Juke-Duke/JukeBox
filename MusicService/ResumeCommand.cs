@@ -1,6 +1,6 @@
 using Discord;
 using Discord.Interactions;
-using Lavalink4NET.Player;
+using Lavalink4NET.Players;
 
 namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
@@ -10,38 +10,12 @@ public partial class MusicSlashCommands
     {
         var embed = new EmbedBuilder().WithColor(102, 196, 166);
 
-        if (!_audioService.HasPlayer(Context.Guild.Id))
-        {
-            embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("JukeBox is not in a vibe session.");
+        var jukeBox = await GetJukeBoxAsync(embed);
 
-            await RespondAsync(embed: embed.Build());
+        if (jukeBox is null)
             return;
-        }
 
-        var userVoiceState = (Context.User as IVoiceState)!;
-
-        if (userVoiceState.VoiceChannel is null)
-        {
-            embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("You must be in a voice channel to resume the vibe.");
-
-            await RespondAsync(embed: embed.Build());
-            return;
-        }
-
-        if (Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
-        {
-            embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("You must be in the same voice channel to resume the vibe.");
-
-            await RespondAsync(embed: embed.Build());
-            return;
-        }
-
-        var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
-
-        if (jukeBox.State != PlayerState.Paused)
+        if (jukeBox.State is not PlayerState.Paused)
         {
             embed.WithAuthor("❌ Vibe Error")
                  .WithTitle("JukeBox's vibe is not paused.");

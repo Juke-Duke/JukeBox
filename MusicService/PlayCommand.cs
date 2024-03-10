@@ -1,40 +1,25 @@
 using Discord;
 using Discord.Interactions;
-using Lavalink4NET.Artwork;
-using Lavalink4NET.Player;
-using Lavalink4NET.Rest;
+using Lavalink4NET.Rest.Entities.Tracks;
 
 namespace JukeBox.MusicService;
 public partial class MusicSlashCommands
 {
-    [SlashCommand("play", "Set JukeBox's current vibe.")]
+    [SlashCommand("play", "Set JukeBox's current vibe.", runMode: RunMode.Async)]
     public async Task PlayCommandAsync([Summary("vibe", "The name or youtube link of the media to vibe to.")] string vibe)
     {
         var embed = new EmbedBuilder().WithColor(102, 196, 166);
 
-        var userVoiceState = (Context.User as IVoiceState)!;
+        var jukeBox = await GetJukeBoxAsync(embed);
 
-        if (userVoiceState.VoiceChannel is null)
-        {
-            embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("You must be in a voice channel to set JukeBox's vibe.");
-
-            await RespondAsync(embed: embed.Build());
+        if (jukeBox is null)
             return;
-        }
 
-        if (_audioService.HasPlayer(Context.Guild.Id) && Context.Guild.CurrentUser.VoiceChannel.Id != userVoiceState.VoiceChannel.Id)
-        {
-            embed.WithAuthor("❌ Vibe Error")
-                 .WithTitle("You must be in the same voice channel to set the vibe.");
+        var track = await _audioService.Tracks
+            .LoadTrackAsync(vibe, TrackSearchMode.YouTube)
+            .ConfigureAwait(false);
 
-            await RespondAsync(embed: embed.Build());
-            return;
-        }
-
-        var setVibe = await _audioService.GetTrackAsync(vibe, SearchMode.YouTube);
-
-        if (setVibe is null)
+        if (track is null)
         {
             embed.WithAuthor("❌ Vibe Error")
                  .WithTitle("No vibe could be found for JukeBox.");
@@ -43,34 +28,17 @@ public partial class MusicSlashCommands
             return;
         }
 
-        if (!_audioService.HasPlayer(Context.Guild.Id))
-        {
-            try
-            {
-                await _audioService.JoinAsync<QueuedLavalinkPlayer>(Context.Guild.Id, userVoiceState.VoiceChannel.Id, true);
-            }
-            catch (Exception e)
-            {
-                await RespondAsync($"Failed to join the voice channel: {e.Message}");
-                return;
-            }
-        }
-
-        var jukeBox = _audioService.GetPlayer<QueuedLavalinkPlayer>(Context.Guild.Id)!;
-
-        var pos = await jukeBox.PlayAsync(setVibe);
-        // using var artworkService = new ArtworkService();
-        // var artworkUri = (await artworkService.ResolveAsync(song))!;
+        var pos = await jukeBox.PlayAsync(track);
 
         if (pos > 0)
             embed.WithAuthor($"✅ Vibe Queued by {Context.User.Username}");
         else
             embed.WithAuthor($"✅ Vibe Set by {Context.User.Username}");
 
-        embed.WithTitle(setVibe.Title)
-             .WithThumbnailUrl(GetYoutubeThumbnailUrl(setVibe.Uri) ?? Context.User.GetAvatarUrl())
-             .AddField("Channel", setVibe.Author, true)
-             .AddField("Duration", setVibe.Duration.ToString("d':'hh':'mm':'ss"), true)
+        embed.WithTitle(track.Title)
+             .WithThumbnailUrl(GetYoutubeThumbnailUrl(track.Uri) ?? Context.User.GetAvatarUrl())
+             .AddField("Channel", track.Author, true)
+             .AddField("Duration", track.Duration.ToString("d':'hh':'mm':'ss"), true)
              .AddField("Position", pos, true);
 
         await RespondAsync(embed: embed.Build());
